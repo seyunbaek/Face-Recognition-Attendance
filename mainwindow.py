@@ -27,6 +27,8 @@ class Ui_OutputDialog(QDialog):
         current_date = now.toString("ddd dd MMMM")
         current_time = datetime.datetime.now().strftime("%I:%M %p")
 
+        self.Date_Label.setText(current_date)
+        self.Time_Label.setText(current_time)
         self.image = None
         self.attendance = []
         self.marked = []
@@ -117,6 +119,7 @@ class Ui_OutputDialog(QDialog):
                         print(self.marked)
                     else:
                         show_face("MARKED", 2)
+                        self.MarkedNames.setText(name)
                 elif True in matches_cv:
                     face_distance = fr.face_distance(self.encode_list, encodeFace)
                     match_index = np.argmin(face_distance)
@@ -125,6 +128,7 @@ class Ui_OutputDialog(QDialog):
                         show_face(name, 1)
                     else:
                         show_face("MARKED", 2)
+                        self.MarkedNames.setText(name)
                 else:
                     show_face("UNKNOWN", 0)
         elif cur_time > late_time:
@@ -150,7 +154,7 @@ class Ui_OutputDialog(QDialog):
         :param window: number of window
         :return:
         """
-        image = cv2.resize(image, (960, 720))
+        image = cv2.resize(image, (1920, 1080))
         try:
             image = self.face_rec_(image, encode_list, class_names)
         except Exception as e:
@@ -172,7 +176,7 @@ class Ui_OutputDialog(QDialog):
 class Ui_Dialog(QDialog):
     def __init__(self):
         super(Ui_Dialog, self).__init__()
-        loadUi("mainwindow.ui", self)
+        loadUi("./mainwindow.ui", self)
 
         self.runButton.clicked.connect(self.run_slot)
 
