@@ -76,14 +76,20 @@ while True:
                 matchIndex = np.argmin(faceDistance)
                 name = names[matchIndex].upper()
                 # Attendance
-                mark_attendance(name)
-                show_face(name,True)
-                print(marked)
+                if name not in marked:
+                    mark_attendance(name)
+                    show_face(name,True)
+                    print(marked)
+                else:
+                    show_face("MARKED",True)
             elif True in matches_cv:
                 faceDistance = fr.face_distance(encodings, encodeFace)
                 matchIndex = np.argmin(faceDistance)
                 name = names[matchIndex].upper()
-                show_face(name,True)            
+                if name not in marked:
+                    show_face(name,True)
+                else:
+                    show_face("MARKED",True)            
             else:
                 show_face("UNKNOWN",False)
     elif cur_time > late_time:
