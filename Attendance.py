@@ -3,6 +3,11 @@ import face_recognition as fr
 import numpy as np
 import cv2
 import pickle
+import datetime
+
+# Set Variable
+attendance = []
+marked = []
 
 # Import Saved_Encodings
 with open('Year_11.dat', 'rb') as f:
@@ -11,15 +16,23 @@ names = list(data.keys())
 encodings = np.array(list(data.values()))
 print(names)
 
+# Define Functions
+def mark_attendance(name):
+    attendance.append({"Name":name,"Time":cur_time.strftime("%X")})
+    marked.append(name)
+
 def show_face(name,bool):
     if bool == False:
         cv2.rectangle(img, (x1, y1), (x2, y2), (0,0,255), 2)
         cv2.rectangle(img, (x1, y2-35), (x2, y2), (0,0,255), cv2.FILLED)
         cv2.putText(img, "UNKNOWN", (x1+6, y2-6), (cv2.FONT_HERSHEY_SIMPLEX), 1, (255,255,255), 2)
+        cv2.putText(img, marked, (0, 720/6), (cv2.FONT_HERSHEY_SIMPLEX), 1, (0,0,0), 2)
+
     else:
         cv2.rectangle(img, (x1, y1), (x2, y2), (0,255,0), 2)
         cv2.rectangle(img, (x1, y2-35), (x2, y2), (0,255,0), cv2.FILLED)
         cv2.putText(img, name, (x1+6, y2-6), (cv2.FONT_HERSHEY_SIMPLEX), 1, (0,0,0), 2)
+        cv2.putText(img, marked, (0, 720/6), (cv2.FONT_HERSHEY_SIMPLEX), 1, (0,0,0), 2)
 
 # Find Faces
 cap = cv2.VideoCapture(0)
@@ -33,7 +46,9 @@ while True:
     # Locating and Finding Encodings of Face in the Frame
     facesCurFrame = fr.face_locations(imgS)
     encodingsCurFrame = fr.face_encodings(imgS, facesCurFrame)
-    
+
+    cur_time = datetime.datetime.now().time()
+
     # Comparing Faces Located with Faces Already Recognized
     for encodeFace, faceLoc in zip(encodingsCurFrame, facesCurFrame):
         matches_cv = fr.compare_faces(encodings, encodeFace, 0.45)
@@ -44,7 +59,10 @@ while True:
             faceDistance = fr.face_distance(encodings, encodeFace)
             matchIndex = np.argmin(faceDistance)
             name = names[matchIndex].upper()
+            # Attendance
+            mark_attendance(name)
             show_face(name,True)
+            print(marked)
         elif True in matches_cv:
             faceDistance = fr.face_distance(encodings, encodeFace)
             matchIndex = np.argmin(faceDistance)
