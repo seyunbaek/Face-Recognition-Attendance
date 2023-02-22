@@ -6,6 +6,9 @@ import pickle
 import datetime
 
 # Set Variable
+present_time = datetime.time(9,0,0)
+late_time = datetime.time(9,30,0)
+
 attendance = []
 marked = []
 
@@ -18,8 +21,19 @@ print(names)
 
 # Define Functions
 def mark_attendance(name):
-    attendance.append({"Name":name,"Time":cur_time.strftime("%X")})
-    marked.append(name)
+    if cur_time <= present_time:
+        # Present
+        attendance.append({"Name":name,"Time":cur_time.strftime("%X"),"Status":"Present"})
+        marked.append(name)
+    elif cur_time > present_time and cur_time <= late_time:
+        # Late
+        attendance.append({"Name":name,"Time":cur_time.strftime("%X"),"Status":"Late"})
+        marked.append(name)
+    elif cur_time > late_time:
+        # Absent
+        attendance.append({"Name":name,"Time":None,"Status":"Absent"})
+    else:
+        pass
 
 def show_face(name,bool):
     if bool == False:
@@ -33,7 +47,6 @@ def show_face(name,bool):
         cv2.rectangle(img, (x1, y2-35), (x2, y2), (0,255,0), cv2.FILLED)
         cv2.putText(img, name, (x1+6, y2-6), (cv2.FONT_HERSHEY_SIMPLEX), 1, (0,0,0), 2)
         cv2.putText(img, marked, (0, 720/6), (cv2.FONT_HERSHEY_SIMPLEX), 1, (0,0,0), 2)
-
 # Find Faces
 cap = cv2.VideoCapture(0)
 
@@ -49,27 +62,29 @@ while True:
 
     cur_time = datetime.datetime.now().time()
 
-    # Comparing Faces Located with Faces Already Recognized
-    for encodeFace, faceLoc in zip(encodingsCurFrame, facesCurFrame):
-        matches_cv = fr.compare_faces(encodings, encodeFace, 0.45)
-        matches_attendance = fr.compare_faces(encodings, encodeFace, 0.35)
-        y1, x2, y2, x1 = faceLoc
-        y1, x2, y2, x1 = y1*4, x2*4, y2*4, x1*4
-        if True in matches_attendance:
-            faceDistance = fr.face_distance(encodings, encodeFace)
-            matchIndex = np.argmin(faceDistance)
-            name = names[matchIndex].upper()
-            # Attendance
-            mark_attendance(name)
-            show_face(name,True)
-            print(marked)
-        elif True in matches_cv:
-            faceDistance = fr.face_distance(encodings, encodeFace)
-            matchIndex = np.argmin(faceDistance)
-            name = names[matchIndex].upper()
-            show_face(name,True)            
-        else:
-            show_face("UNKNOWN",False)
-
+    if cur_time <= late_time:
+        # Comparing Faces Located with Faces Already Recognized
+        for encodeFace, faceLoc in zip(encodingsCurFrame, facesCurFrame):
+            matches_cv = fr.compare_faces(encodings, encodeFace, 0.45)
+            matches_attendance = fr.compare_faces(encodings, encodeFace, 0.35)
+            y1, x2, y2, x1 = faceLoc
+            y1, x2, y2, x1 = y1*4, x2*4, y2*4, x1*4
+            if True in matches_attendance:
+                faceDistance = fr.face_distance(encodings, encodeFace)
+                matchIndex = np.argmin(faceDistance)
+                name = names[matchIndex].upper()
+                # Attendance
+                mark_attendance(name)
+                show_face(name,True)
+                print(marked)
+            elif True in matches_cv:
+                faceDistance = fr.face_distance(encodings, encodeFace)
+                matchIndex = np.argmin(faceDistance)
+                name = names[matchIndex].upper()
+                show_face(name,True)            
+            else:
+                show_face("UNKNOWN",False)
+    elif cur_time > late_time:
+        break
     cv2.imshow("Webcam",img)
     cv2.waitKey(1)
