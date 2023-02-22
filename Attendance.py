@@ -3,11 +3,13 @@ import face_recognition as fr
 import numpy as np
 import cv2
 import pickle
+import pandas as pd
 import datetime
+from datetime import date
 
 # Set Variable
-present_time = datetime.time(9,0,0)
-late_time = datetime.time(9,30,0)
+present_time = datetime.time(21,0,0)
+late_time = datetime.time(21,59,0)
 
 attendance = []
 marked = []
@@ -88,3 +90,7 @@ while True:
         break
     cv2.imshow("Webcam",img)
     cv2.waitKey(1)
+
+output = pd.DataFrame(attendance)
+output.sort_values("Name")
+output.to_excel(f"{date.today()}.xlsx")
